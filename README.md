@@ -14,7 +14,7 @@ git clone git@github.com:tlovely/sprink.git
 
 ### create zone map
 
-Create a file at `/opt/a/sprink/.zones.json` with your zone to gpio mapping. Below is an example:
+Create a file at `sprink/.zones.json` with your zone to gpio mapping. Below is an example:
 
 ```json
 {
