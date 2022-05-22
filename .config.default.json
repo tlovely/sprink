@@ -1,0 +1,4 @@
+{
+	"DB_PATH": ".data.db",
+	"AUTH_ENABLED": true
+}

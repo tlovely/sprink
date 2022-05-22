@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      html, body, #app {
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        font-family: monospace;
+        background-color: #444445;
+        margin: 0;
+        padding: 0;
+      }
+      input[type="text"], input[type="number"] {
+        padding: 10px;
+        outline: none;
+        border: none;
+        border-radius: 3px;
+      }
+      #app > div {
+        margin-bottom: 50px;
+      }
+      #timer {
+         margin-top: 50px;
+         color: #ddddde;
+         font-size: 20px;
+      }
+      #manual {
+         margin-top: 50px;
+      }
+      .manual {
+        display: inline-block;
+        background-color: #666667;
+        border-radius: 3px;
+        border: solid 1px #888889;
+        padding: 20px 25px;
+        color: #ddddde;
+      }
+      .manual:hover, .manual.engaged, .manual.engaged.auto:hover {
+        border: solid 1px orange;
+        cursor: pointer;
+      }
+      .manual.engaged {
+        color: orange;
+      }
+      .manual.engaged.auto {
+        border:  solid 1px lightBlue;
+        color: lightBlue;
+      }
+      #schedules {
+        display: inline-block;
+        background-color: #666667;
+        border-radius: 3px;
+        border: solid 1px #888889;
+        padding: 5px 10px;
+        color: #ddddde;
+      }
+      .schedule {
+        width: 500px;
+        text-align: left;
+        border-top: solid 1px #888889;
+        padding: 30px 5px;
+      }
+      .schedule:first-child {
+        border: none;
+      }
+      .schedule .manual {
+        margin-top: 10px;
+        padding: 5px 10px;
+      }
+      .schedule > div {
+        display: inline-block;
+      }
+      .schedule > .cron > input {
+        width: 80px;
+      }
+      .schedule > .dur > input {
+        width: 40px;
+      }
+      .schedule > .dur {
+        margin-left: 4px;
+      }
+      .zones > div {
+        margin-left: 4px;
+      }
+      .zones > span {
+        margin-left: 4px;
+      }
+      .schedule > span {
+        margin-left: 4px;
+      }
+      .hide {
+        display: none;
+      }
+      .manual.disabled {
+        background-color: orange;
+        border: solid 1px orange;
+        color: #444445;
+      }
+    </style>
+    <title>Lawn Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=2.0" />
+    <script src="vue.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <div id="timer">-</div>
+      <div id="manual">
+        <div class="manual">1</div>
+        <div class="manual">2</div>
+        <div class="manual">3</div>
+        <div class="manual">4</div>
+        <div class="manual">5</div>
+        <div class="manual">6</div>
+      </div>
+      <div id="schedules">
+      </div>
+    </div>
+    <script>
+      const ZONES = [1, 2, 3, 4, 5, 6];
+      let schedules = document.getElementById('schedules');
+      
+      function createSchedule(schedule, actionText) {
+        const zoneMap = schedule.zones.reduce((a, zone) => {
+          a[zone] = zone;
+          return a;
+        }, {})
+        // base
+        const root = document.createElement('div');
+        root.className = 'schedule';
+        // cron
+        const cron = document.createElement('div');
+        cron.className = 'cron';
+        const cronInput = document.createElement('input');
+        cronInput.type = 'text';
+        cronInput.placeholder = 'cron';
+        cronInput.value = schedule.cron;
+        cron.appendChild(cronInput);
+        root.appendChild(cron);
+        // duration
+        const dur = document.createElement('div');
+        dur.className = 'dur';
+        const durInput = document.createElement('input');
+        durInput.type = 'number';
+        durInput.value = schedule.duration;
+        dur.appendChild(durInput);
+        root.appendChild(dur);
+        // divider
+        const barOne = document.createElement('span');
+        barOne.innerText = '|';
+        barOne.className = 'divider';
+        root.appendChild(barOne);
+        // zones
+        const zones = document.createElement('div');
+        zones.className = 'zones';
+        const zoneElements = [];
+        ZONES.forEach((z) => {
+          const zone = document.createElement('div');
+          zone.innerText = z;
+          zone.className = zoneMap[z] ? 'manual engaged auto' : 'manual';
+          zone.addEventListener('click', () => {
+            zone.className = zone.className === 'manual' ?
+              'manual engaged auto' :
+              'manual'
+          })
+          zoneElements.push(zone);
+          zones.appendChild(zone);
+        })
+        // divider 2
+        const barTwo = document.createElement('span');
+        barTwo.innerText = '|';
+        zones.appendChild(barTwo);
+        // edit
+        const edit = document.createElement('div');
+        edit.className = 'manual';
+        edit.innerText = actionText;
+        edit.addEventListener('click', () => {
+          schedule = {
+            ...schedule,
+            duration: Number(durInput.value),
+            zones: zoneElements
+              .filter((z) => z.className !== 'manual')
+              .map((z) => Number(z.innerText)),
+            cron: cronInput.value
+          }
+          if (schedule.id) {
+            fetch(`/api/schedule/${schedule.id}`, {
+              method: 'PUT',
+              headers: {'content-type': 'application/json'},
+              body: JSON.stringify(schedule)
+            })
+          } else {
+            fetch(`/api/schedule`, {
+              method: 'POST',
+              headers: {'content-type': 'application/json'},
+              body: JSON.stringify(schedule)
+            })
+              .then((r) => r.json())
+              .then((data) => {
+                edit.innerText = 'E';
+                del.className = 'manual delete';
+                dis.className = 'manual';
+                schedule = data;
+                schedules.prepend(createSchedule({'cron': '', 'zones': []}, '+'));
+              })
+          }
+        })
+        zones.appendChild(edit);
+        // disabled
+        const dis = document.createElement('div');
+        dis.className = `manual ${schedule.id ? '' : 'hide'} ${schedule.disabled ? 'disabled' : ''}`;
+        dis.innerText = 'D';
+        dis.addEventListener('click', () => {
+          fetch(`/api/schedule/${schedule.id}`, {
+            method: 'PUT',
+            headers: {'content-type': 'application/json'},
+            body: JSON.stringify({...schedule, disabled: schedule.disabled ? 0 : -1})
+          })
+            .then((r) => r.json())
+            .then((data) => {
+              schedule = data;
+              dis.className = `manual ${schedule.disabled ? 'disabled' : ''}`;
+            })
+        })
+        zones.appendChild(dis);
+        // delete
+        const del = document.createElement('div');
+        del.className = `manual delete ${schedule.id ? '' : 'hide'}`;
+        del.innerText = 'x';
+        del.addEventListener('click', () => {
+          fetch(`/api/schedule/${schedule.id}`, {method: 'DELETE'})
+            .then((r) => {
+              schedules.removeChild(root);
+            })
+        })
+        zones.appendChild(del);
+        root.appendChild(zones);
+        return root;
+      }
+
+      const timer = document.getElementById('timer');
+      const manual = Array.prototype.slice.call(document.getElementById('manual').children);
+      const manualByZone = manual.reduce((a, m) => {
+        a[m.innerText] = m;
+        return a;
+      }, {})
+
+      manual.forEach((m) => {
+        let className = 'manual';
+        let scheduleID; 
+        m.addEventListener('click', (e) => {
+          if (m.className === 'manual') {
+            fetch(`/api/schedule`, {
+              method: 'POST',
+              headers: {'content-type': 'application/json'},
+              body: `{"zones": [${m.innerText}], "duration": 1}`
+            })
+            className = 'manual engaged';
+          }
+          else {
+            fetch(`/api/schedule/1`, {
+              method: 'DELETE'
+            })
+            className = 'manual'
+          }
+          m.className = className
+        })
+      })
+
+      const events = new EventSource('/api/events');
+      let timerInt;
+
+      const timerCount = (end) => {
+        clearInterval(timerInt);
+        timerInt = setInterval(() => {
+          let now = (new Date()).getTime();
+          let count = Math.round(end - now);
+          if (0 >= count) {
+            timer.innerText = '-';
+            clearInterval(timerInt);
+          } else {
+            timer.innerText = `${Math.round(count / 1000)}`;
+          }
+        }, 1000);
+      }
+
+      events.addEventListener('zone_state', (e) => {
+        const event = JSON.parse(e.data);
+        let countStarted = false;
+        manual.forEach((m) => {
+          if (Number(m.innerText) === event.zone && event.state === 'on') {
+            timerCount(event.end);
+            countStarted = true;
+            m.className = event.manual ? 'manual engaged' : 'manual engaged auto';
+          } else {
+            m.className = 'manual';
+          }
+        })
+        if (!countStarted) {
+          clearInterval(timerInt);
+          timer.innerText = '-';
+        }
+      })
+
+      schedules.appendChild(createSchedule({'cron': '', 'zones': []}, '+'));
+
+      fetch('/api/schedule')
+        .then((res) => res.json())
+        .then((data) => {
+          data.reverse().forEach((s) => {
+            if (s.cron)
+              schedules.appendChild(createSchedule(s, 'E'));
+          })
+        })
+    </script>
+  </body>
+</html>

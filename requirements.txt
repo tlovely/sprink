@@ -1,0 +1,6 @@
+crontab
+aiohttp
+aiohttp-devtools
+aiosqlite
+toolz
+RPi.GPIO
