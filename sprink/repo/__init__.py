@@ -12,8 +12,13 @@ def connect(commit = False, cache = False):
     assert not (commit and cache)
     def _connect(fn):
         async def _connected(*args, **kwargs):
-            if cache and (fn,) in _cache and _cache[(fn,)]['mtime'] == os.stat(DB_PATH).st_mtime:
-                return _cache[(fn,)]['result']
+            cache_key = (
+                fn, 
+                args[1:] if args and isinstance(args[0], aiosqlite.core.Connection) else args, 
+                tuple(kwargs.items())
+            )
+            if cache and cache_key in _cache and _cache[cache_key]['mtime'] == os.stat(DB_PATH).st_mtime:
+                return _cache[cache_key]['result']
 
             if commit:
                 _cache.clear()
@@ -28,7 +33,7 @@ def connect(commit = False, cache = False):
                         await con.commit()
             
             if cache:
-                _cache[(fn,)] = {'mtime': os.stat(DB_PATH).st_mtime, 'result': result}
+                _cache[cache_key] = {'mtime': os.stat(DB_PATH).st_mtime, 'result': result}
 
             return result
         return _connected
