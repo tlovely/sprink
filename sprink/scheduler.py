@@ -1,4 +1,3 @@
-import time
 import asyncio
 import json
 
@@ -6,47 +5,6 @@ from sprink.repo.zone import on as zone_on, off as zone_off, register_cleanup
 from sprink.repo.schedule import get_active
 
 from traceback import print_exc
-
-# _crons = {}
-
-
-# async def get_active_zone():
-#     now = time.time()
-#     schedules = list(sorted(await repo.get(), key=lambda s: s['updated']))[::-1]
-#     ms = None
-#     for s in schedules:
-#         if s.get('cron') is None:
-#             if ms is None:
-#                 ms = s
-#             else:
-#                 await repo.delete(s['id'])
-#     if ms is not None:
-#         end = ms['updated'] + sum(z['duration'] for z in ms['zones']) * 60
-#         if end < now:
-#             await repo.delete(ms['id'])
-#         else:
-#             a = ms['updated']
-#             for z in ms['zones']:
-#                 a += (z['duration'] * 60)
-#                 if a > now:
-#                     return z['zone'], a, True
-#     for s in schedules:
-#         if 'cron' in s:
-#             if s['cron'] in _crons:
-#                 ct = _crons[s['cron']]
-#             else:
-#                 try:
-#                     ct = CronTab(s['cron'])
-#                 except ValueError as e:
-#                     print(e)
-#                     continue
-#                 _crons[s['cron']] = ct
-#             p = ct.previous(default_utc=True)
-#             for z in s['zones']:
-#                 p += (z['duration'] * 60)
-#                 if p > 0:
-#                     return z['zone'], now + p, False
-#     return None, None, None
 
 
 async def noop(*args, **kwargs):
