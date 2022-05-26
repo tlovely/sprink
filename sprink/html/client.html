@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      html, body, #app {
+        width: 100%;
+        height: 100%;
+        text-align: center;
+        font-family: monospace;
+        background-color: #444445;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+    <link rel="stylesheet" href="/static/component.css" />
+    <title>Sprink</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="/static/vue.min.js"></script>
+    <script src="/static/repo.js"></script>
+    <script src="/static/util.js"></script>
+    <script src="/static/component.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <zone-timer :zone-active="zoneActive"></zone-timer>
+      <div>
+        <zone-control :zone-active="zoneActive" :zones="zones"></zone-control>
+      </div>
+      <div id="schedules">
+        <schedule :zones="zones" :schedules="schedules"></schedule>
+        <schedule v-for="schedule in schedules" :schedule="schedule" :zones="zones" :schedules="schedules"></schedule>
+      </div>
+    </div>
+    <script>
+      const app = Vue.createApp({
+        setup: () => {
+          const data = Vue.reactive({ 
+            zones: [], 
+            zoneState: {},
+            zoneActive: {},
+            schedules: []
+          });
+
+          const events = repo.events();
+
+          events.addEventListener('zone_state', (e) => {
+            let event = JSON.parse(e.data);
+            if (event.state === 'on') {
+              data.zoneActive = event;
+            } else if (event.zone === data.zoneActive.zone) {
+              data.zoneActive = {};
+            }
+          })
+          
+          repo.zone.list().then((zones) => {
+            data.zones = zones;
+          });
+
+          repo.schedule.list().then((schedules) => {
+            data.schedules = schedules.filter((s) => s.id !== 1);
+          })
+
+          return data;
+        }
+      });
+
+      app.component('ZoneTimer', ZoneTimer);
+      app.component('ZoneControl', ZoneControl);
+      app.component('Schedule', Schedule);
+
+      app.mount('#app')
+    </script>
+  </body>
+</html>

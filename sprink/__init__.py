@@ -14,7 +14,7 @@ from aiohttp.web import (
     run_app
 )
 
-from sprink.repo import schedule, user
+from sprink.repo import schedule, user, ZONES
 from sprink.scheduler import manage_zones
 
 routes = RouteTableDef()
@@ -38,6 +38,11 @@ async def handle_auth(request, handler):
     return await handler(request)
 
 
+@routes.get('/api/zone')
+async def get_zones(request):
+    return json_response(list(ZONES.keys()))
+
+
 @routes.post('/api/schedule')
 async def post_schedule(request):
     return json_response(await schedule.create(await request.json()))
@@ -47,6 +52,14 @@ async def post_schedule(request):
 async def put_schedule(request):
     schedule_id = request.match_info['schedule_id']
     return json_response(await schedule.update(int(schedule_id), await request.json()))
+
+
+@routes.put('/api/schedule/{schedule_id}/disable')
+async def put_schedule_disable(request):
+    schedule_id = int(request.match_info['schedule_id'])
+    schedule_ = await schedule.get(schedule_id)
+    schedule_['disabled'] = 0 if schedule_['disabled'] else -1
+    return json_response(await schedule.update(schedule_id, schedule_))
 
 
 @routes.delete('/api/schedule/{schedule_id}')
@@ -90,8 +103,10 @@ async def lawn_events(request):
         await asyncio.sleep(1)
 
 
-routes.get('/login')(serve_file('sprink/static/login.html'))
-routes.get('/')(serve_file('sprink/static/client.html'))
+routes.static('/static', 'sprink/static')
+
+routes.get('/login')(serve_file('sprink/html/login.html'))
+routes.get('/')(serve_file('sprink/html/client.html'))
 
 
 async def on_startup(app):

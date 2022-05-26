@@ -1,0 +1,140 @@
+/* -- ZoneTimer -- */
+#zone-timer {
+  margin-top: 35px;
+  margin-bottom: 35px;
+  font-size: 20px;
+  color: #ddddde;
+}
+
+/* -- ZoneControl -- */
+#zone-control { display: inline-block; max-width: 370px; padding-left: 10px; }
+#zone-control > div {
+  display: inline-block;
+  background-color: #666667;
+  border-radius: 3px;
+  border: solid 1px #888889;
+  width: 48px;
+  height: 48px;
+  line-height: 50px;
+  text-align: center;
+  color: #ddddde;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+#zone-control > div > span {
+  display: inline-block;
+  vertical-align: center;
+  line-height: normal;
+}
+#zone-control > div:first-child { margin-left: 0 }
+#zone-control > div:hover {
+  border: solid 1px orange;
+  cursor: pointer;
+}
+#zone-control > div.active {
+  border: solid 1px lightBlue;
+  color: lightBlue;
+}
+#zone-control > div.active.manual {
+  border: solid 1px orange;
+  color: orange;
+}
+
+/* -- Schedule -- */
+#schedules {
+  display: inline-block;
+  width: 340;
+}
+.schedule {
+  margin-top: 20px;
+  width: 338px; 
+  //display: inline-block; 
+  padding: 10px 0 0 10px; 
+  background-color: #666667;
+  border-radius: 3px;
+  border: solid 1px #888889;
+  text-align: left;
+}
+.schedule > div {
+  margin-top: 10px;
+}
+.schedule > div:first-child {
+  margin-top: 0;
+}
+.schedule > div:last-child {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+.schedule input {
+  padding: 0 10px;
+  outline: none;
+  border: none;
+  border-radius: 3px;
+  background-color: #444445;
+  border-radius: 3px;
+  border: solid 1px #888889;
+  color: #ddddde;
+  margin-right: 10px;
+  height: 25px;
+  width: 50px;
+}
+.schedule input.invalid {
+  border: solid 1px red;
+}
+.schedule input::placeholder {
+  color: #ddddde;
+  opacity: 0.5;
+}
+.schedule input[type="text"]:first-child {
+  width: 150px;
+}
+.schedule .zones { display: inline-block; }
+.schedule .zones > div {
+  display: inline-block;
+  background-color: #666667;
+  border-radius: 3px;
+  border: solid 1px #888889;
+  width: 25px;
+  height: 25px;
+  line-height: 25px;
+  text-align: center;
+  color: #ddddde;
+  margin-right: 10px;
+  margin-bottom: 10px;
+}
+.schedule .zones > div.selected {
+  border: solid 1px lightblue;
+  color: lightblue;
+}
+.schedule .zones > div > span {
+  display: inline-block;
+  vertical-align: center;
+  line-height: normal;
+}
+.schedule .control > button {
+  height: 25px;
+  outline: none;
+  border: none;
+  border-radius: 3px;
+  background-color: #666667;
+  border-radius: 3px;
+  border: solid 1px #888889;
+  color: #ddddde;
+  margin-right: 10px;
+}
+.schedule .control > button.disabled {
+  color: #888889;
+}
+.schedule .control > button.disabled:hover {
+  color: #888889;
+  border: solid 1px #888889;
+  cursor: initial;
+}
+.schedule .control > button.active {
+  background-color: orange;
+  color: #444445;
+}
+.schedule .control > button:hover, .schedule .zones > div:hover {
+  border: solid 1px orange;
+  cursor: pointer;
+}

@@ -15,7 +15,7 @@ async def get(con, schedule_id = None):
             schedule['zones'] = json.loads(schedule['zones'])
             return schedule
     else:
-        cur = await con.execute('select * from schedule order by updated asc;')
+        cur = await con.execute('select * from schedule order by updated desc;')
         schedules = []
         for schedule in map(dict, await cur.fetchall()):
             schedule['zones'] = json.loads(schedule['zones'])
